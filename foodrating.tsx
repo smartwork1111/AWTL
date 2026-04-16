@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 
 // Interface
 interface FoodItem {
@@ -18,9 +18,9 @@ const App: React.FC = () => {
 
   const [filter, setFilter] = useState<"all" | "high" | "low" | "unrated">("all");
 
-  // Update rating - fixed stale closure
+  // Update rating
   const updateRating = (id: number, rating: number) => {
-    setFoods(prevFoods => prevFoods.map(food =>
+    setFoods(foods.map(food =>
       food.id === id ? { ...food, rating } : food
     ));
   };
@@ -33,114 +33,69 @@ const App: React.FC = () => {
     return true;
   });
 
-  // Statistics - memoized to fix staleness and performance
-  const stats = useMemo(() => {
-    const hasRatings = foods.some(f => f.rating > 0);
-    if (!hasRatings) {
-      return {
-        allZero: true,
-        avg: 0,
-        highest: null as FoodItem | null,
-        lowest: null as FoodItem | null,
-        highCount: 0
-      };
-    }
+  // Statistics
+  const ratings = foods.map(f => f.rating);
+  const total = ratings.reduce((a, b) => a + b, 0);
+  const avg = total / foods.length;
 
-    const ratings = foods.map(f => f.rating);
-    const total = ratings.reduce((a, b) => a + b, 0);
-    const avg = total / foods.length;
+  const highest = foods.reduce((a, b) => (a.rating > b.rating ? a : b));
+  const lowest = foods.reduce((a, b) => (a.rating < b.rating ? a : b));
+  const highCount = foods.filter(f => f.rating >= 4).length;
 
-    const highest = foods.reduce((a, b) => (a.rating > b.rating ? a : b));
-    const lowest = foods.reduce((a, b) => (a.rating < b.rating ? a : b));
-    const highCount = foods.filter(f => f.rating >= 4).length;
+  const allZero = foods.every(f => f.rating === 0);
 
-    return { allZero: false, avg, highest, lowest, highCount };
-  }, [foods]);
-
-  // Reset - fixed stale closure
+  // Reset
   const resetRatings = () => {
-    setFoods(prevFoods => prevFoods.map(f => ({ ...f, rating: 0 })));
+    setFoods(foods.map(f => ({ ...f, rating: 0 })));
   };
 
   return (
-    <div style={{ textAlign: "center", padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h2>🍕 Food Rating App</h2>
+    <div style={{ textAlign: "center" }}>
+      <h2>Food Rating App</h2>
 
       {/* Filter Buttons */}
-      <div style={{ marginBottom: "20px" }}>
-        <button onClick={() => setFilter("all")} style={{ margin: "5px", padding: "10px" }}>Show All</button>
-        <button onClick={() => setFilter("high")} style={{ margin: "5px", padding: "10px" }}>High Rated (4+ ⭐)</button>
-        <button onClick={() => setFilter("low")} style={{ margin: "5px", padding: "10px" }}>Low Rated (less than 3 ⭐)</button>
-        <button onClick={() => setFilter("unrated")} style={{ margin: "5px", padding: "10px" }}>Unrated (0 ⭐)</button>
+      <div>
+        <button onClick={() => setFilter("all")}>Show All</button>
+        <button onClick={() => setFilter("high")}>High Rated (4+ ⭐)</button>
+        <button onClick={() => setFilter("low")}>Low Rated (&lt;3 ⭐)</button>
+        <button onClick={() => setFilter("unrated")}>Unrated (0 ⭐)</button>
       </div>
 
-      <hr style={{ margin: "20px 0" }} />
+      <hr />
 
       {/* Food List */}
-      {filteredFoods.length === 0 ? (
-        <p>No foods match the current filter.</p>
-      ) : (
-        filteredFoods.map(food => (
-          <div key={food.id} style={{ margin: "20px 0", padding: "15px", border: "1px solid #ddd", borderRadius: "8px" }}>
-            <h3>{food.name} - {food.rating} ⭐</h3>
-            <div>
-              {[1,2,3,4,5].map(star => (
-                <button 
-                  key={star} 
-                  onClick={() => updateRating(food.id, star)}
-                  style={{ 
-                    margin: "5px", 
-                    padding: "8px 12px", 
-                    background: food.rating >= star ? "#ffd700" : "#f0f0f0",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    cursor: "pointer"
-                  }}
-                >
-                  {star}⭐
-                </button>
-              ))}
-            </div>
-          </div>
-        ))
-      )}
+      {filteredFoods.map(food => (
+        <div key={food.id}>
+          <h3>{food.name} - {food.rating} ⭐</h3>
+          {[1,2,3,4,5].map(star => (
+            <button key={star} onClick={() => updateRating(food.id, star)}>
+              {star}⭐
+            </button>
+          ))}
+        </div>
+      ))}
 
-      <hr style={{ margin: "20px 0" }} />
+      <hr />
 
       {/* Statistics */}
-      <h3>📊 Statistics</h3>
-      {stats.allZero ? (
-        <p>No ratings available yet!</p>
+      <h3>Statistics</h3>
+      {allZero ? (
+        <p>No ratings available</p>
       ) : (
-        <div style={{ background: "#f9f9f9", padding: "20px", borderRadius: "8px", display: "inline-block" }}>
-          <p><strong>Average Rating:</strong> {stats.avg.toFixed(2)} ⭐</p>
-          <p><strong>Highest Rated:</strong> {stats.highest?.name} ({stats.highest?.rating} ⭐)</p>
-          <p><strong>Lowest Rated:</strong> {stats.lowest?.name} ({stats.lowest?.rating} ⭐)</p>
-          <p><strong>Foods with 4+ ⭐:</strong> {stats.highCount}</p>
-        </div>
+        <>
+          <p>Average Rating: {avg.toFixed(2)}</p>
+          <p>Highest Rated: {highest.name}</p>
+          <p>Lowest Rated: {lowest.name}</p>
+          <p>Foods with 4+ ⭐: {highCount}</p>
+        </>
       )}
 
-      <hr style={{ margin: "20px 0" }} />
+      <hr />
 
       {/* Reset */}
-      <button 
-        onClick={resetRatings}
-        style={{ 
-          padding: "12px 24px", 
-          background: "#ff4444", 
-          color: "white", 
-          border: "none", 
-          borderRadius: "6px", 
-          fontSize: "16px",
-          cursor: "pointer"
-        }}
-        disabled={stats.allZero}
-      >
-        Reset All Ratings
-      </button>
+      <button onClick={resetRatings}>Reset All Ratings</button>
     </div>
   );
 };
 
 export default App;
-

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Tic Tac Toe</title>
+    <style>
+        body { text-align: center; font-family: Arial; }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 80px);
+            gap: 5px;
+            justify-content: center;
+            margin: 20px;
+        }
+        .cell {
+            width: 80px;
+            height: 80px;
+            font-size: 30px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Tic Tac Toe</h2>
+
+<div class="board" id="board"></div>
+
+<p id="result"></p>
+
+<button onclick="resetGame()">Reset</button>
+
+<script>
+let board = ["", "", "", "", "", "", "", "", ""];
+let currentPlayer = "X";
+let gameOver = false;
+
+const boardDiv = document.getElementById("board");
+const result = document.getElementById("result");
+
+// Create board
+for (let i = 0; i < 9; i++) {
+    const btn = document.createElement("button");
+    btn.classList.add("cell");
+    btn.addEventListener("click", () => makeMove(i, btn));
+    boardDiv.appendChild(btn);
+}
+
+function makeMove(index, btn) {
+    if (board[index] !== "" || gameOver) return;
+
+    board[index] = currentPlayer;
+    btn.textContent = currentPlayer;
+
+    if (checkWinner()) {
+        result.textContent = currentPlayer + " Wins!";
+        gameOver = true;
+        return;
+    }
+
+    if (!board.includes("")) {
+        result.textContent = "Draw!";
+        gameOver = true;
+        return;
+    }
+
+    currentPlayer = currentPlayer === "X" ? "O" : "X";
+}
+
+function checkWinner() {
+    const winPatterns = [
+        [0,1,2], [3,4,5], [6,7,8], // rows
+        [0,3,6], [1,4,7], [2,5,8], // columns
+        [0,4,8], [2,4,6]           // diagonals
+    ];
+
+    return winPatterns.some(pattern => {
+        return pattern.every(i => board[i] === currentPlayer);
+    });
+}
+
+function resetGame() {
+    board = ["", "", "", "", "", "", "", "", ""];
+    currentPlayer = "X";
+    gameOver = false;
+    result.textContent = "";
+
+    document.querySelectorAll(".cell").forEach(cell => {
+        cell.textContent = "";
+    });
+}
+</script>
+
+</body>
+</html>

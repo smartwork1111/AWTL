@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Typing Speed Detector</title>
+</head>
+<body>
+
+<h2>Typing Speed Test</h2>
+
+<p id="sentence">The quick brown fox jumps over the lazy dog</p>
+
+<textarea id="inputBox" rows="4" cols="50" placeholder="Start typing here..."></textarea>
+
+<br><br>
+
+<button onclick="startTest()">Start</button>
+
+<p>Time: <span id="time">0</span> sec</p>
+<p>WPM: <span id="wpm">0</span></p>
+
+<script>
+let startTime, timer;
+
+function startTest() {
+    document.getElementById("inputBox").value = "";
+    document.getElementById("wpm").textContent = "0";
+    document.getElementById("time").textContent = "0";
+
+    startTime = new Date().getTime();
+
+    timer = setInterval(updateTime, 1000);
+}
+
+function updateTime() {
+    let currentTime = new Date().getTime();
+    let seconds = Math.floor((currentTime - startTime) / 1000);
+    document.getElementById("time").textContent = seconds;
+
+    calculateSpeed(seconds);
+}
+
+function calculateSpeed(time) {
+    let text = document.getElementById("inputBox").value;
+    let wordCount = text.trim().split(/\s+/).length;
+
+    if (time > 0) {
+        let wpm = Math.floor((wordCount / time) * 60);
+        document.getElementById("wpm").textContent = wpm;
+    }
+}
+</script>
+
+</body>
+</html>
