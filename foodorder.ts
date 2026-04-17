@@ -98,6 +98,8 @@ console.log(`\nDelivered Orders Count: ${deliveredCount}`);
 
 
 //npm install -g typescript ts-node
+//ts-node -v
+//tsc -v
 //ts-node foodorder.ts
 //tsc order.ts
 //node order.js
